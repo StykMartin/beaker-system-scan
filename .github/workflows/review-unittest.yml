@@ -1,0 +1,22 @@
+name: review-checks-unittests
+
+on: [pull_request, push]
+
+jobs:
+  unittests:
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:31
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install all dependencies
+      run: |
+        dnf install git gcc make 'dnf-command(builddep)' -y
+        dnf builddep *.spec -y
+    - name: make application
+      run: |
+        make
+    - name: execute unittests
+      run: |
+        PYTHONPATH=. pytest -s -vv --full-trace --durations=10 --junit-xml=junit.xml 2>&1 | tee tests.out
